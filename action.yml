@@ -1,0 +1,23 @@
+name: "ZAP Annotations"
+description: "Parse OWASP ZAP XML reports, post PR summary, and fail by configured severities"
+author: "zap-annotations"
+branding:
+  icon: "shield"
+  color: "orange"
+
+inputs:
+  severities:
+    description: "Comma-separated severities that should fail the job"
+    required: false
+    default: "Critical,High,Medium"
+  report-dir:
+    description: "Directory containing zapreport-*.xml"
+    required: false
+    default: "test/output"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.severities }}
+    - ${{ inputs.report-dir }}
