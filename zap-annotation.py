@@ -32,6 +32,13 @@ SEVERITY_COLORS = {
     "Low": "#1F883D",
     "Informational": "#0969DA",
 }
+SEVERITY_LABELS = {
+    "Critical": "🔴 Critical",
+    "High": "🟠 High",
+    "Medium": "🟡 Medium",
+    "Low": "🟢 Low",
+    "Informational": "🔵 Informational",
+}
 
 
 def get_artifact_download_url(repo, run_id, artifact_name, token, api_url):
@@ -105,8 +112,8 @@ def main():
     for xml_file in xml_files:
         summary += (
             f"#### Report File: `{xml_file}`\n\n"
-            "| Alert | Severity |\n"
-            "| --- | --- |\n"
+            "| Alert | Severity | Occurrences |\n"
+            "| --- | --- | --- |\n"
         )
 
         try:
@@ -117,7 +124,7 @@ def main():
             continue
 
         alertitems = [el for el in root.iter() if el.tag and el.tag.endswith("alertitem")]
-        matched_alerts = []
+        matched_alerts = {}
 
         for alert in alertitems:
             risk_full = text_for(alert, "riskdesc")
@@ -126,17 +133,20 @@ def main():
 
             if risk in PATTERN:
                 alert_count += 1
-                matched_alerts.append((name, risk))
+                key = (name, risk)
+                matched_alerts[key] = matched_alerts.get(key, 0) + 1
 
-        matched_alerts.sort(key=lambda x: (SEVERITY_ORDER.get(x[1], 99), x[0].lower()))
+        sorted_alerts = sorted(
+            matched_alerts.items(),
+            key=lambda x: (SEVERITY_ORDER.get(x[0][1], 99), x[0][0].lower()),
+        )
 
-        for name, risk in matched_alerts:
-            color = SEVERITY_COLORS.get(risk, "#57606A")
-            severity_cell = f"<span style='color:{color}; font-weight:600'>{risk}</span>"
-            summary += f"| {name} | {severity_cell} |\n"
+        for (name, risk), occurrences in sorted_alerts:
+            severity_cell = SEVERITY_LABELS.get(risk, f"⚪ {risk}")
+            summary += f"| {name} | {severity_cell} | {occurrences} |\n"
 
-        if not matched_alerts:
-            summary += "| No matching alerts | - |\n"
+        if not sorted_alerts:
+            summary += "| No matching alerts | - | - |\n"
 
         summary += "\n"
 

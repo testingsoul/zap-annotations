@@ -7,7 +7,7 @@ Parse OWASP ZAP XML reports, publish a pull request summary comment, and fail th
 - Reads `zapreport-*.xml` files from a configurable directory.
 - Filters by severity threshold list.
 - Sorts summary rows by severity (`Critical`, `High`, `Medium`, `Low`, `Informational`).
-- Adds severity colors in the PR summary table.
+- Publishes a PR summary table with severity labels and occurrence counts.
 - Fails workflow when matching alerts are present.
 
 ## Inputs
@@ -25,6 +25,8 @@ permissions:
 ```
 
 ## Usage
+
+Use this action in pull request workflows after your ZAP scan step has generated XML reports.
 
 ```yaml
 name: DAST
@@ -45,7 +47,7 @@ jobs:
 
       # Your ZAP scan step should produce test/output/zapreport-*.xml
       - name: Run ZAP Annotation
-        uses: your-org/zap-annotations@v1
+        uses: testingsoul/zap-annotations@v1
         with:
           severities: "Critical,High,Medium"
           report-dir: "test/output"
@@ -53,12 +55,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Publishing
+### Notes
 
-1. Create a public repository and push these files.
-2. Create and push tags (`v1.0.0`, then move major tag `v1`).
-3. Add a GitHub Release for each version.
-4. Publish in GitHub Marketplace from the release flow.
+- `report-dir` must contain files named like `zapreport-*.xml`.
+- If any alert matches `severities`, the step exits with code `1` to fail the job.
+- On `pull_request` events, the action posts a comment to the PR with a summary table.
+
 
 ## License
 
