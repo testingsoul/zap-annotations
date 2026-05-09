@@ -112,8 +112,8 @@ def main():
     for xml_file in xml_files:
         summary += (
             f"#### Report File: `{xml_file}`\n\n"
-            "| Alert | Severity | Occurrences |\n"
-            "| --- | --- | --- |\n"
+            "| Alert | Severity |\n"
+            "| --- | --- |\n"
         )
 
         try:
@@ -141,12 +141,12 @@ def main():
             key=lambda x: (SEVERITY_ORDER.get(x[0][1], 99), x[0][0].lower()),
         )
 
-        for (name, risk), occurrences in sorted_alerts:
+        for (name, risk), _ in sorted_alerts:
             severity_cell = SEVERITY_LABELS.get(risk, f"⚪ {risk}")
-            summary += f"| {name} | {severity_cell} | {occurrences} |\n"
+            summary += f"| {name} | {severity_cell} |\n"
 
         if not sorted_alerts:
-            summary += "| No matching alerts | - | - |\n"
+            summary += "| No matching alerts | - |\n"
 
         summary += "\n"
 
